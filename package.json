@@ -1,17 +1,56 @@
 {
-  "name": "review-router",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "bun run --watch index.ts",
-    "build": "bun build index.ts --outdir dist",
-    "start": "bun run dist/index.js"
-  },
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  }
+	"name": "review-router",
+	"version": "0.0.0",
+	"license": "MIT",
+	"bin": "dist/src/cli.js",
+	"type": "module",
+	"engines": {
+		"bun": ">=1.2.21"
+	},
+	"scripts": {
+		"build": "rm -rf dist && tsc",
+		"dev": "bun --hot src/cli.tsx",
+		"typecheck": "tsc --noEmit",
+		"typecheck:watch": "tsc --noEmit --watch",
+		"lint": "prettier --check . && xo",
+		"test": "bun test",
+		"test:watch": "bun test --watch"
+	},
+	"files": [
+		"dist"
+	],
+	"dependencies": {
+		"@octokit/types": "^14.1.0",
+		"@opencode-ai/sdk": "^0.7.3",
+		"@tanstack/react-query": "^5.87.4",
+		"@types/bun": "^1.2.21",
+		"ink": "^4.1.0",
+		"ink-select-input": "^6.2.0",
+		"ink-text-input": "^6.0.0",
+		"meow": "^11.0.0",
+		"octokit": "^5.0.3",
+		"react": "^18.2.0"
+	},
+	"devDependencies": {
+		"@sindresorhus/tsconfig": "^3.0.1",
+		"@tanstack/eslint-plugin-query": "^5.86.0",
+		"@types/react": "^18.0.32",
+		"@vdemedes/prettier-config": "^2.0.1",
+		"chalk": "^5.2.0",
+		"eslint-config-xo-react": "^0.27.0",
+		"eslint-plugin-react": "^7.32.2",
+		"eslint-plugin-react-hooks": "^4.6.0",
+		"ink-testing-library": "^3.0.0",
+		"prettier": "^2.8.7",
+		"typescript": "^5.0.3",
+		"xo": "^0.53.1"
+	},
+	"xo": {
+		"extends": "xo-react",
+		"prettier": true,
+		"rules": {
+			"react/prop-types": "off"
+		}
+	},
+	"prettier": "@vdemedes/prettier-config"
 }

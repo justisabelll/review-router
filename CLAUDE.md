@@ -1,111 +1,130 @@
----
-description: Use Bun instead of Node.js, npm, pnpm, or vite.
-globs: "*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json"
-alwaysApply: false
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ---
 
-Default to using Bun instead of Node.js.
+description: Use Bun instead of Node.js, npm, pnpm, or vite.
+globs: '_.ts, _.tsx, _.html, _.css, _.js, _.jsx, package.json'
+alwaysApply: false
+
+---
+
+## Project Overview
+
+Review Router is an AI-powered CLI tool built with Ink (React for CLI) that helps manage code reviews using GitHub and OpenCode AI services. The application features:
+
+- Interactive credential setup for GitHub PAT and OpenRouter API keys
+- GitHub repository integration using Octokit
+- OpenCode AI integration for code analysis
+- Configuration management via `config.json`
+
+## Development Commands
+
+### Core Commands
+
+- `bun install` - Install dependencies
+- `bun run dev` - Hot-reload development server
+- `bun run build` - Build TypeScript to `dist/` directory
+- `bun run typecheck` - Run TypeScript type checking once
+- `bun run typecheck:watch` - Run TypeScript type checking in watch mode
+- `bun test` - Run tests once
+- `bun run test:watch` - Run tests in watch mode
+
+### Code Quality
+
+- `bun run lint` - Run Prettier and XO linter (must pass before commits)
+- `prettier --check .` - Check code formatting
+- `xo` - Run XO ESLint configuration
+
+## Architecture
+
+### Entry Point
+
+- `src/cli.tsx` - Main CLI application using Ink React components
+- Implements credential management and GitHub repository fetching
+- Uses React Query for state management and data fetching
+
+### Views
+
+- `src/views/credential-setup.tsx` - Interactive credential input component
+- Handles OpenRouter API key and GitHub PAT collection
+- Persists credentials to `config.json`
+
+### Utilities
+
+- `util/ocktokit.ts` - GitHub API client setup and type definitions
+- `util/opencode.ts` - OpenCode AI client with server/client singleton pattern
+- Handles authentication and cleanup for OpenCode services
+
+### Configuration
+
+- `config.json` - Stores API credentials (GitHub PAT, OpenRouter key)
+- Uses a specific schema defined in `Config` interface
+
+## Technology Stack
+
+### Runtime & Build
+
+- **Bun** - Runtime, package manager, and build tool
+- **TypeScript** - Primary language with strict configuration
+- **React** - UI framework (via Ink for CLI)
+
+### Key Dependencies
+
+- `ink` - React for CLI interfaces
+- `ink-text-input`, `ink-select-input` - Interactive CLI components
+- `@tanstack/react-query` - State management and data fetching
+- `octokit` - GitHub API client
+- `@opencode-ai/sdk` - AI code analysis services
+- `meow` - CLI argument parsing (currently commented out)
+
+### Code Quality Tools
+
+- `xo` - ESLint configuration with React support
+- `prettier` - Code formatting with Vdemedes config
+- `@sindresorhus/tsconfig` - Strict TypeScript configuration
+
+## Bun-Specific Patterns
+
+Default to using Bun instead of Node.js:
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
 - Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Bun automatically loads .env, so don't use dotenv.
-
-## APIs
-
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
+- Use `bun build` instead of `webpack` or `esbuild`
+- Use `bun install` instead of `npm install`
+- Use `bun run <script>` instead of `npm run <script>`
+- Bun automatically loads .env, so don't use dotenv
 - Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+- Use `Bun.$` instead of execa for shell commands
 
-## Testing
+### Bun APIs Used
 
-Use `bun test` to run tests.
+- `Bun.file('config.json').json()` - JSON file reading
+- `Bun.write()` - File writing operations
 
-```ts#index.test.ts
-import { test, expect } from "bun:test";
+## Development Notes
 
-test("hello world", () => {
-  expect(1).toBe(1);
-});
-```
+### Credential Management
 
-## Frontend
+- The app checks for existing credentials on startup
+- If no credentials exist, shows setup flow
+- Credentials are stored in `config.json` (not in git)
+- GitHub PAT requires appropriate permissions for repository access
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
+### OpenCode Integration
 
-Server:
+- Uses singleton pattern for server/client management
+- Handles cleanup on process termination
+- Server runs on ephemeral port to avoid hot-reload collisions
 
-```ts#index.ts
-import index from "./index.html"
+### Testing
 
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
+- Uses `bun:test` framework
+- Test files should follow pattern `*.test.tsx`
+- Currently minimal test coverage
 
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
+### Hot Reloading
 
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-
-// import .css files directly and it works
-import './index.css';
-
-import { createRoot } from "react-dom/client";
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.md`.
+- Use `bun --hot src/cli.tsx` for development
+- Supports React component hot reloading via Ink
